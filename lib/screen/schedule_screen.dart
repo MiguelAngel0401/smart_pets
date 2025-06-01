@@ -4,10 +4,10 @@ class ScheduleScreen extends StatefulWidget {
   const ScheduleScreen({super.key});
 
   @override
-  _ScheduleScreenState createState() => _ScheduleScreenState();
+  ScheduleScreenState createState() => ScheduleScreenState();
 }
 
-class _ScheduleScreenState extends State<ScheduleScreen> {
+class ScheduleScreenState extends State<ScheduleScreen> {
   TimeOfDay? selectedTime;
   DateTime? selectedDate;
 
@@ -112,7 +112,9 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                 ),
                 const SizedBox(height: 20),
                 ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    // Aquí puedes guardar la fecha y hora seleccionada
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.greenAccent,
                   ),

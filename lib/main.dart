@@ -1,13 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:smart_pets/screen/notification_Screen.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:firebase_core/firebase_core.dart';
+
+import 'firebase_options.dart'; // Opciones Firebase web
+
+import 'screen/notification_screen.dart';
 import 'screen/login_screen.dart';
 import 'screen/register_screen.dart';
 import 'screen/session_screen.dart';
 import 'screen/add_pets.dart';
-import 'screen/homescreen.dart';
+import 'screen/home_screen.dart';
 import 'screen/schedule_screen.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Firebase.initializeApp(
+    options: kIsWeb ? DefaultFirebaseOptions.currentPlatform : null,
+  );
+
   runApp(const MyApp());
 }
 

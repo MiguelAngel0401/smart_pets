@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "954896035069",
+    "project_id": "smart-pets-app",
+    "storage_bucket": "smart-pets-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:954896035069:android:9466dfcf6809a8bf5c2294",
+        "android_client_info": {
+          "package_name": "com.example.smart_pets"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBRLbFgdyuXZPMOsYil4WYm0UdFdOl51n4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
