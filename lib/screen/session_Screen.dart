@@ -7,109 +7,139 @@ class SessionScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        double screenWidth = constraints.maxWidth;
-        //double screenHeight = constraints.maxHeight;
+    final double screenWidth = MediaQuery.of(context).size.width;
 
-        return Scaffold(
-          backgroundColor: Colors.white,
-          appBar: AppBar(
-            centerTitle: true,
-            title: const Text('Bienvenido Miguel'),
-            backgroundColor: Colors.orangeAccent,
+    return Scaffold(
+      backgroundColor: const Color(0xFFFFE0B2),
+      appBar: AppBar(
+        centerTitle: true,
+        title: const Text(
+          'Bienvenido Miguel',
+          style: TextStyle(
+            color: Colors.black87,
+            fontWeight: FontWeight.bold,
+            fontSize: 22,
           ),
-          body: SingleChildScrollView(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(top: 20),
-                  child: Card(
-                    elevation: 5,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                    margin: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          FittedBox(
-                            fit: BoxFit.scaleDown,
-                            child: Text(
-                              '¡Hora de alimentar a tus mascotas!',
-                              style: TextStyle(
-                                fontSize: screenWidth * 0.06,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                          const SizedBox(height: 30),
-                          _responsiveButton(
-                            context,
-                            "Agregar Mascota",
-                            () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const AddPetScreen(),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          _responsiveButton(
-                            context,
-                            "Configurar alimentación",
-                            () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const ScheduleScreen(),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          _responsiveButton(
-                            context,
-                            "Historial de Mascotas",
-                            () {
-                              // Acción para historial
-                            },
-                          ),
-                        ],
+        ),
+        backgroundColor: Colors.orangeAccent.withOpacity(0.85),
+        elevation: 4,
+        shadowColor: Colors.orange.shade200.withOpacity(0.4),
+        iconTheme: const IconThemeData(color: Colors.black87),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 30),
+        child: Column(
+          children: [
+            Expanded(
+              child: Card(
+                elevation: 6,
+                shadowColor: Colors.deepOrange.withOpacity(0.15),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                margin: EdgeInsets.zero,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 30,
+                    horizontal: 25,
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        '¡Hora de alimentar a tus mascotas!',
+                        style: TextStyle(
+                          fontSize: screenWidth * 0.06,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.deepOrange.shade400.withOpacity(0.8),
+                          fontFamily: 'Georgia',
+                        ),
+                        textAlign: TextAlign.center,
                       ),
-                    ),
+                      const SizedBox(height: 40),
+                      _responsiveButton(
+                        context,
+                        "Agregar Mascota",
+                        () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const AddPetScreen(),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      _responsiveButton(
+                        context,
+                        "Configurar alimentación",
+                        () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const ScheduleScreen(),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      _responsiveButton(context, "Historial de Mascotas", () {
+                        // Acción para historial
+                      }),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 20),
-                Column(
-                  children: [
-                    IconButton(
-                      icon: const Icon(
-                        Icons.logout,
-                        color: Colors.red,
-                        size: 30,
-                      ),
-                      onPressed: () {
-                        Navigator.pushNamed(context, '/');
-                      },
+              ),
+            ),
+            const SizedBox(height: 30),
+            GestureDetector(
+              onTap: () {
+                Navigator.pushNamed(context, '/');
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  vertical: 10,
+                  horizontal: 30,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.red.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(25),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.red.withOpacity(0.1),
+                      spreadRadius: 2,
+                      blurRadius: 6,
+                      offset: const Offset(0, 3),
                     ),
-                    const Text(
-                      'Cerrar sesión',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 20),
                   ],
                 ),
-              ],
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: const [
+                    Icon(Icons.logout, color: Colors.redAccent, size: 28),
+                    SizedBox(width: 12),
+                    Text(
+                      'Cerrar sesión',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.redAccent,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
-          ),
-        );
-      },
+            const SizedBox(height: 40),
+            const Center(
+              child: Text(
+                'Smart Pets ❤️ Cuidando a quienes más amas',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontStyle: FontStyle.italic,
+                  color: Colors.black54,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -118,14 +148,26 @@ class SessionScreen extends StatelessWidget {
     String text,
     VoidCallback onPressed,
   ) {
-    double screenWidth = MediaQuery.of(context).size.width;
+    final double screenWidth = MediaQuery.of(context).size.width;
+
     return ElevatedButton(
       onPressed: onPressed,
       style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.orangeAccent,
-        minimumSize: Size(screenWidth * 0.7, 50),
+        backgroundColor: Colors.deepOrange.withOpacity(0.85),
+        minimumSize: Size(screenWidth * 0.7, 52),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        elevation: 4,
+        shadowColor: Colors.deepOrangeAccent.withOpacity(0.3),
       ),
-      child: Text(text),
+      child: Text(
+        text,
+        style: const TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.w600,
+          color: Colors.white,
+          letterSpacing: 0.8,
+        ),
+      ),
     );
   }
 }

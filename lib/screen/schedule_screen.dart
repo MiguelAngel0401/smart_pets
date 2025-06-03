@@ -41,30 +41,58 @@ class ScheduleScreenState extends State<ScheduleScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final isSmallDevice = size.width < 300;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFFFE0B2), // fondo cálido
       appBar: AppBar(
         centerTitle: true,
         title: const Text('Configurar Horario'),
-        backgroundColor: Colors.orangeAccent,
+        backgroundColor: Colors.orangeAccent.withOpacity(0.9),
+        elevation: 0,
+        toolbarHeight: 70,
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.orangeAccent, Color(0xFFFFB74D)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.vertical(bottom: Radius.circular(25)),
+          ),
+        ),
       ),
       body: Center(
-        child: Card(
-          elevation: 5,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15),
-          ),
-          margin: const EdgeInsets.all(20),
-          child: Padding(
-            padding: const EdgeInsets.all(20),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 36),
+          child: Container(
+            constraints: const BoxConstraints(maxWidth: 420),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.95),
+              borderRadius: BorderRadius.circular(30),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.orangeAccent.withOpacity(0.3),
+                  blurRadius: 30,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+            ),
+            padding: const EdgeInsets.all(28),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 const Text(
-                  'Programa un horario para tu mascota',
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  'Aquí puedes configurar el horario de tu mascota',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 30),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -73,21 +101,32 @@ class ScheduleScreenState extends State<ScheduleScreen> {
                       size: 30,
                       color: Colors.orangeAccent,
                     ),
-                    const SizedBox(width: 10),
+                    const SizedBox(width: 12),
                     ElevatedButton(
                       onPressed: () => _selectTime(context),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.orangeAccent,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 22,
+                          vertical: 14,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
                       ),
                       child: Text(
                         selectedTime != null
                             ? selectedTime!.format(context)
                             : 'Seleccionar Hora',
+                        style: TextStyle(
+                          fontSize: isSmallDevice ? 14 : 16,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 25),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -96,29 +135,71 @@ class ScheduleScreenState extends State<ScheduleScreen> {
                       size: 30,
                       color: Colors.blueAccent,
                     ),
-                    const SizedBox(width: 10),
+                    const SizedBox(width: 12),
                     ElevatedButton(
                       onPressed: () => _selectDate(context),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blueAccent,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 22,
+                          vertical: 14,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
                       ),
                       child: Text(
                         selectedDate != null
-                            ? "${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year}"
+                            ? "${selectedDate!.day.toString().padLeft(2, '0')}/"
+                                "${selectedDate!.month.toString().padLeft(2, '0')}/"
+                                "${selectedDate!.year}"
                             : 'Seleccionar Fecha',
+                        style: TextStyle(
+                          fontSize: isSmallDevice ? 14 : 16,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: () {
-                    // Aquí puedes guardar la fecha y hora seleccionada
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.greenAccent,
+                const SizedBox(height: 40),
+                SizedBox(
+                  width: 140,
+                  height: 42,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      // Acción al guardar
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF43A047), // verde bonito
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(24),
+                      ),
+                      elevation: 6,
+                      shadowColor: Colors.green.withOpacity(0.4),
+                    ),
+                    child: const Center(
+                      child: Text(
+                        'Guardar',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.5,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
                   ),
-                  child: const Text('Guardar Horario'),
+                ),
+                const SizedBox(height: 30),
+                const Text(
+                  'Smart Pets ❤️ Cuidando a quienes más amas',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontStyle: FontStyle.italic,
+                    color: Colors.black54,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
               ],
             ),

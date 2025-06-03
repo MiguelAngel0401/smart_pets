@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:firebase_core/firebase_core.dart';
 
-import 'firebase_options.dart'; // Opciones Firebase web
+import 'firebase_options.dart';
 
+import 'screen/splash_screen.dart'; // ✅ Nueva pantalla
 import 'screen/notification_screen.dart';
 import 'screen/login_screen.dart';
 import 'screen/register_screen.dart';
@@ -37,7 +38,8 @@ class MyApp extends StatelessWidget {
       ),
       initialRoute: '/',
       routes: {
-        '/': (context) => const HomeScreen(),
+        '/': (context) => const SplashScreen(), // ✅ Splash al inicio
+        '/home': (context) => const HomeScreen(), // Nuevo alias para home
         '/login': (context) => const LoginScreen(),
         '/register': (context) => const RegisterScreen(),
         '/add_pet': (context) => const AddPetScreen(),

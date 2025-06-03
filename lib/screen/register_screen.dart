@@ -8,13 +8,20 @@ class RegisterScreen extends StatelessWidget {
     final width = MediaQuery.of(context).size.width;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFFFE0B2),
       appBar: AppBar(
         centerTitle: true,
-        title: const Text('Registro'),
+        title: const Text(
+          'Registro',
+          style: TextStyle(
+            color: Colors.black,
+            fontWeight: FontWeight.bold,
+            fontSize: 24,
+          ),
+        ),
         backgroundColor: Colors.orangeAccent,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () {
             Navigator.pop(context);
           },
@@ -28,11 +35,24 @@ class RegisterScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                //const Text(
-                //'Registro',
-                //style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                //textAlign: TextAlign.center,
-                //),
+                const Icon(Icons.pets, size: 60, color: Colors.deepOrange),
+                const SizedBox(height: 20),
+                const Text(
+                  'Crea tu cuenta Smart Pets 🐾',
+                  style: TextStyle(
+                    fontSize: 26,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Georgia',
+                    color: Colors.deepOrange,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 10),
+                const Text(
+                  'Completa los datos para comenzar',
+                  style: TextStyle(fontSize: 16, color: Colors.black87),
+                  textAlign: TextAlign.center,
+                ),
                 const SizedBox(height: 24),
 
                 _buildInputField(label: 'Nombre'),
@@ -42,26 +62,71 @@ class RegisterScreen extends StatelessWidget {
 
                 const SizedBox(height: 24),
                 ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    // Aquí tu lógica de registro
+                  },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.orangeAccent,
+                    backgroundColor: Colors.deepOrange,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
                   ),
-                  child: const Text('Registrarse'),
+                  child: const Text(
+                    'Registrarse',
+                    style: TextStyle(fontSize: 18),
+                  ),
                 ),
 
-                const SizedBox(height: 16),
+                const SizedBox(height: 8), // Espacio reducido
                 TextButton(
-                  onPressed: () {},
-                  child: const Text('Términos y Condiciones'),
+                  onPressed: () {
+                    // Lógica para Términos y Condiciones
+                  },
+                  child: const Text(
+                    'Términos y Condiciones',
+                    style: TextStyle(
+                      color: Colors.deepOrange,
+                      decoration: TextDecoration.underline,
+                    ),
+                  ),
                 ),
-                const SizedBox(height: 8),
-                const Text(
-                  '¿Ya tienes una cuenta?',
-                  textAlign: TextAlign.center,
+
+                const SizedBox(height: 12), // Espacio reducido
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text(
+                      '¿Ya tienes una cuenta? ',
+                      style: TextStyle(color: Colors.black87),
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.pushNamed(context, '/login');
+                      },
+                      child: const Text(
+                        'Iniciar Sesión aquí',
+                        style: TextStyle(
+                          color: Colors.deepOrange,
+                          fontWeight: FontWeight.bold,
+                          decoration: TextDecoration.underline,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                TextButton(
-                  onPressed: () {},
-                  child: const Text('Iniciar Sesión aquí'),
+
+                const SizedBox(height: 30),
+                const Center(
+                  child: Text(
+                    'Smart Pets ❤️ Cuidando a quienes más amas',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontStyle: FontStyle.italic,
+                      color: Colors.black54,
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -78,9 +143,27 @@ class RegisterScreen extends StatelessWidget {
         obscureText: obscure,
         decoration: InputDecoration(
           labelText: label,
-          border: const OutlineInputBorder(),
+          prefixIcon: _getIconForLabel(label),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+          filled: true,
+          fillColor: Colors.white,
         ),
       ),
     );
+  }
+
+  Icon? _getIconForLabel(String label) {
+    switch (label.toLowerCase()) {
+      case 'nombre':
+        return const Icon(Icons.person_outline);
+      case 'nickname':
+        return const Icon(Icons.person);
+      case 'correo':
+        return const Icon(Icons.email_outlined);
+      case 'contraseña':
+        return const Icon(Icons.lock_outline);
+      default:
+        return null;
+    }
   }
 }
