@@ -21,9 +21,10 @@ class SessionScreen extends StatelessWidget {
             fontSize: 22,
           ),
         ),
-        backgroundColor: Colors.orangeAccent.withOpacity(0.85),
+        backgroundColor: Colors.orangeAccent.withAlpha(217),
         elevation: 4,
-        shadowColor: Colors.orange.shade200.withOpacity(0.4),
+        shadowColor: Colors.orange.shade200.withAlpha(102),
+
         iconTheme: const IconThemeData(color: Colors.black87),
       ),
       body: Padding(
@@ -33,7 +34,7 @@ class SessionScreen extends StatelessWidget {
             Expanded(
               child: Card(
                 elevation: 6,
-                shadowColor: Colors.deepOrange.withOpacity(0.15),
+                shadowColor: Colors.deepOrange.withAlpha(38),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
                 ),
@@ -51,7 +52,7 @@ class SessionScreen extends StatelessWidget {
                         style: TextStyle(
                           fontSize: screenWidth * 0.06,
                           fontWeight: FontWeight.bold,
-                          color: Colors.deepOrange.shade400.withOpacity(0.8),
+                          color: Colors.deepOrange.shade400.withAlpha(204),
                           fontFamily: 'Georgia',
                         ),
                         textAlign: TextAlign.center,
@@ -98,11 +99,11 @@ class SessionScreen extends StatelessWidget {
                   horizontal: 30,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.red.withOpacity(0.15),
+                  color: Colors.red.withAlpha(38),
                   borderRadius: BorderRadius.circular(25),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.red.withOpacity(0.1),
+                      color: Colors.red.withAlpha(26),
                       spreadRadius: 2,
                       blurRadius: 6,
                       offset: const Offset(0, 3),
@@ -153,11 +154,11 @@ class SessionScreen extends StatelessWidget {
     return ElevatedButton(
       onPressed: onPressed,
       style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.deepOrange.withOpacity(0.85),
+        backgroundColor: Colors.deepOrange.withAlpha(217),
         minimumSize: Size(screenWidth * 0.7, 52),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
         elevation: 4,
-        shadowColor: Colors.deepOrangeAccent.withOpacity(0.3),
+        shadowColor: Colors.deepOrangeAccent.withAlpha(77),
       ),
       child: Text(
         text,

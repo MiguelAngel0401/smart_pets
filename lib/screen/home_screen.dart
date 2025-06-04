@@ -62,11 +62,12 @@ class _HomeScreen extends State<HomeScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
           child: Container(
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.92),
+              color: Colors.white.withAlpha(235),
+
               borderRadius: BorderRadius.circular(30),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.orangeAccent.withOpacity(0.3),
+                  color: Colors.orangeAccent.withAlpha(77),
                   blurRadius: 30,
                   offset: const Offset(0, 10),
                 ),

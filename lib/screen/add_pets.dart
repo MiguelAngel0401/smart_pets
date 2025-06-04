@@ -38,11 +38,12 @@ class AddPetScreen extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.all(30),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.92),
+                color: Colors.white.withAlpha(235),
                 borderRadius: BorderRadius.circular(30),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.orangeAccent.withOpacity(0.3),
+                    color: Colors.orangeAccent.withAlpha(77),
+
                     blurRadius: 30,
                     offset: const Offset(0, 10),
                   ),
@@ -51,7 +52,6 @@ class AddPetScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Texto superior
                   Text(
                     'Agrega aquí tu mascota',
                     style: TextStyle(
@@ -63,7 +63,6 @@ class AddPetScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 30),
 
-                  // Campos con iconos
                   _buildInputField(
                     label: 'Nombre de la mascota',
                     icon: Icons.pets,
@@ -85,7 +84,7 @@ class AddPetScreen extends StatelessWidget {
                       ),
                       prefixIcon: const Icon(Icons.category),
                       filled: true,
-                      fillColor: Colors.orangeAccent.withOpacity(0.1),
+                      fillColor: Colors.orangeAccent.withAlpha(26),
                       focusedBorder: OutlineInputBorder(
                         borderSide: const BorderSide(
                           color: Colors.orangeAccent,
@@ -127,7 +126,6 @@ class AddPetScreen extends StatelessWidget {
 
                   const SizedBox(height: 40),
 
-                  // Footer con frase personalizada
                   Text(
                     'Smart Pets ❤️ Cuidando a quienes más amas',
                     style: TextStyle(
@@ -161,7 +159,7 @@ class AddPetScreen extends StatelessWidget {
             icon != null ? Icon(icon, color: Colors.orangeAccent) : null,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         filled: true,
-        fillColor: Colors.orangeAccent.withOpacity(0.1),
+        fillColor: Colors.orangeAccent.withAlpha(26),
         focusedBorder: OutlineInputBorder(
           borderSide: const BorderSide(color: Colors.orangeAccent, width: 2),
           borderRadius: BorderRadius.circular(12),

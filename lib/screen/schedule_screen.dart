@@ -45,11 +45,11 @@ class ScheduleScreenState extends State<ScheduleScreen> {
     final isSmallDevice = size.width < 300;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFFE0B2), // fondo cálido
+      backgroundColor: const Color(0xFFFFE0B2),
       appBar: AppBar(
         centerTitle: true,
         title: const Text('Configurar Horario'),
-        backgroundColor: Colors.orangeAccent.withOpacity(0.9),
+        backgroundColor: Colors.orangeAccent.withAlpha(230),
         elevation: 0,
         toolbarHeight: 70,
         flexibleSpace: Container(
@@ -69,11 +69,11 @@ class ScheduleScreenState extends State<ScheduleScreen> {
           child: Container(
             constraints: const BoxConstraints(maxWidth: 420),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.95),
+              color: Colors.white.withAlpha(242),
               borderRadius: BorderRadius.circular(30),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.orangeAccent.withOpacity(0.3),
+                  color: Colors.orangeAccent.withAlpha(77),
                   blurRadius: 30,
                   offset: const Offset(0, 10),
                 ),
@@ -171,7 +171,7 @@ class ScheduleScreenState extends State<ScheduleScreen> {
                       // Acción al guardar
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF43A047), // verde bonito
+                      backgroundColor: const Color(0xFF43A047),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(24),
                       ),

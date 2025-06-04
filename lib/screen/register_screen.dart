@@ -79,7 +79,7 @@ class RegisterScreen extends StatelessWidget {
                   ),
                 ),
 
-                const SizedBox(height: 8), // Espacio reducido
+                const SizedBox(height: 8),
                 TextButton(
                   onPressed: () {
                     // Lógica para Términos y Condiciones
@@ -93,7 +93,7 @@ class RegisterScreen extends StatelessWidget {
                   ),
                 ),
 
-                const SizedBox(height: 12), // Espacio reducido
+                const SizedBox(height: 12),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
