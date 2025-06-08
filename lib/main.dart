@@ -13,13 +13,20 @@ import 'screen/add_pets.dart';
 import 'screen/home_screen.dart';
 import 'screen/schedule_screen.dart';
 
+Future<void> initializeFirebase() async {
+  try {
+    await Firebase.initializeApp(
+      options: kIsWeb ? DefaultFirebaseOptions.currentPlatform : null,
+    );
+    debugPrint("✅ Conexión a Firebase exitosa");
+  } catch (e) {
+    debugPrint("❌ Error al conectar con Firebase: $e");
+  }
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  await Firebase.initializeApp(
-    options: kIsWeb ? DefaultFirebaseOptions.currentPlatform : null,
-  );
-
+  await initializeFirebase();
   runApp(const MyApp());
 }
 

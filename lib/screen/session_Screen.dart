@@ -8,6 +8,23 @@ class SessionScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final double screenWidth = MediaQuery.of(context).size.width;
+    final double screenHeight = MediaQuery.of(context).size.height;
+
+    double clamp(double val, double min, double max) => val.clamp(min, max);
+
+    final double maxCardWidth = 500;
+
+    final double cardWidth =
+        screenWidth < maxCardWidth ? screenWidth * 0.9 : maxCardWidth;
+    final double fontSizeTitle = clamp(screenWidth * 0.05, 18, 28);
+    final double fontSizeButton = clamp(screenWidth * 0.04, 14, 20);
+    final double buttonWidth = clamp(screenWidth * 0.7, 220, 350);
+    final double verticalPadding = clamp(screenHeight * 0.02, 15, 40);
+
+    final double logoutIconSize = clamp(screenWidth * 0.05, 18, 28);
+    final double logoutFontSize = clamp(screenWidth * 0.035, 14, 20);
+    final double logoutHorizontalPadding = clamp(screenWidth * 0.08, 20, 40);
+    final double logoutVerticalPadding = clamp(screenHeight * 0.015, 8, 15);
 
     return Scaffold(
       backgroundColor: const Color(0xFFFFE0B2),
@@ -24,25 +41,29 @@ class SessionScreen extends StatelessWidget {
         backgroundColor: Colors.orangeAccent.withAlpha(217),
         elevation: 4,
         shadowColor: Colors.orange.shade200.withAlpha(102),
-
         iconTheme: const IconThemeData(color: Colors.black87),
       ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 30),
-        child: Column(
-          children: [
-            Expanded(
-              child: Card(
+      body: Center(
+        child: Padding(
+          padding: EdgeInsets.symmetric(
+            vertical: verticalPadding,
+            horizontal: 16,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Card(
                 elevation: 6,
                 shadowColor: Colors.deepOrange.withAlpha(38),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
                 ),
                 margin: EdgeInsets.zero,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 30,
-                    horizontal: 25,
+                child: Container(
+                  width: cardWidth,
+                  padding: EdgeInsets.symmetric(
+                    vertical: verticalPadding * 1.5,
+                    horizontal: cardWidth * 0.08,
                   ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -50,14 +71,14 @@ class SessionScreen extends StatelessWidget {
                       Text(
                         '¡Hora de alimentar a tus mascotas!',
                         style: TextStyle(
-                          fontSize: screenWidth * 0.06,
+                          fontSize: fontSizeTitle,
                           fontWeight: FontWeight.bold,
                           color: Colors.deepOrange.shade400.withAlpha(204),
                           fontFamily: 'Georgia',
                         ),
                         textAlign: TextAlign.center,
                       ),
-                      const SizedBox(height: 40),
+                      SizedBox(height: verticalPadding * 1.8),
                       _responsiveButton(
                         context,
                         "Agregar Mascota",
@@ -67,8 +88,10 @@ class SessionScreen extends StatelessWidget {
                             builder: (context) => const AddPetScreen(),
                           ),
                         ),
+                        buttonWidth,
+                        fontSizeButton,
                       ),
-                      const SizedBox(height: 20),
+                      SizedBox(height: verticalPadding),
                       _responsiveButton(
                         context,
                         "Configurar alimentación",
@@ -78,67 +101,79 @@ class SessionScreen extends StatelessWidget {
                             builder: (context) => const ScheduleScreen(),
                           ),
                         ),
+                        buttonWidth,
+                        fontSizeButton,
                       ),
-                      const SizedBox(height: 20),
-                      _responsiveButton(context, "Historial de Mascotas", () {
-                        // Acción para historial
-                      }),
+                      SizedBox(height: verticalPadding),
+                      _responsiveButton(
+                        context,
+                        "Historial de Mascotas",
+                        () {
+                          // Acción para historial
+                        },
+                        buttonWidth,
+                        fontSizeButton,
+                      ),
                     ],
                   ),
                 ),
               ),
-            ),
-            const SizedBox(height: 30),
-            GestureDetector(
-              onTap: () {
-                Navigator.pushNamed(context, '/');
-              },
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  vertical: 10,
-                  horizontal: 30,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.red.withAlpha(38),
-                  borderRadius: BorderRadius.circular(25),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.red.withAlpha(26),
-                      spreadRadius: 2,
-                      blurRadius: 6,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: const [
-                    Icon(Icons.logout, color: Colors.redAccent, size: 28),
-                    SizedBox(width: 12),
-                    Text(
-                      'Cerrar sesión',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.redAccent,
+              SizedBox(height: verticalPadding * 2),
+              GestureDetector(
+                onTap: () {
+                  Navigator.pushNamed(context, '/');
+                },
+                child: Container(
+                  padding: EdgeInsets.symmetric(
+                    vertical: logoutVerticalPadding,
+                    horizontal: logoutHorizontalPadding,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.red.withAlpha(38),
+                    borderRadius: BorderRadius.circular(25),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.red.withAlpha(26),
+                        spreadRadius: 2,
+                        blurRadius: 6,
+                        offset: const Offset(0, 3),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.logout,
+                        color: Colors.redAccent,
+                        size: logoutIconSize,
+                      ),
+                      SizedBox(width: logoutHorizontalPadding * 0.3),
+                      Text(
+                        'Cerrar sesión',
+                        style: TextStyle(
+                          fontSize: logoutFontSize,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.redAccent,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 40),
-            const Center(
-              child: Text(
-                'Smart Pets ❤️ Cuidando a quienes más amas',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontStyle: FontStyle.italic,
-                  color: Colors.black54,
+              SizedBox(height: verticalPadding * 3),
+              Center(
+                child: Text(
+                  'Smart Pets ❤️ Cuidando a quienes más amas',
+                  style: TextStyle(
+                    fontSize: clamp(screenWidth * 0.035, 12, 18),
+                    fontStyle: FontStyle.italic,
+                    color: Colors.black54,
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -148,22 +183,22 @@ class SessionScreen extends StatelessWidget {
     BuildContext context,
     String text,
     VoidCallback onPressed,
+    double width,
+    double fontSize,
   ) {
-    final double screenWidth = MediaQuery.of(context).size.width;
-
     return ElevatedButton(
       onPressed: onPressed,
       style: ElevatedButton.styleFrom(
         backgroundColor: Colors.deepOrange.withAlpha(217),
-        minimumSize: Size(screenWidth * 0.7, 52),
+        minimumSize: Size(width, 52),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
         elevation: 4,
         shadowColor: Colors.deepOrangeAccent.withAlpha(77),
       ),
       child: Text(
         text,
-        style: const TextStyle(
-          fontSize: 18,
+        style: TextStyle(
+          fontSize: fontSize,
           fontWeight: FontWeight.w600,
           color: Colors.white,
           letterSpacing: 0.8,
