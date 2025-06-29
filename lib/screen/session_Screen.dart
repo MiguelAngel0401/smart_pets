@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:smart_pets/screen/schedule_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:smart_pets/screen/add_pets.dart';
+import 'package:smart_pets/screen/history_pets.dart';
 
 class SessionScreen extends StatelessWidget {
-  const SessionScreen({super.key});
+  final String nickname;
+
+  const SessionScreen({super.key, required this.nickname});
 
   @override
   Widget build(BuildContext context) {
@@ -13,7 +16,6 @@ class SessionScreen extends StatelessWidget {
     double clamp(double val, double min, double max) => val.clamp(min, max);
 
     final double maxCardWidth = 500;
-
     final double cardWidth =
         screenWidth < maxCardWidth ? screenWidth * 0.9 : maxCardWidth;
     final double fontSizeTitle = clamp(screenWidth * 0.05, 18, 28);
@@ -30,9 +32,9 @@ class SessionScreen extends StatelessWidget {
       backgroundColor: const Color(0xFFFFE0B2),
       appBar: AppBar(
         centerTitle: true,
-        title: const Text(
-          'Bienvenido Miguel',
-          style: TextStyle(
+        title: Text(
+          'Bienvenido, $nickname',
+          style: const TextStyle(
             color: Colors.black87,
             fontWeight: FontWeight.bold,
             fontSize: 22,
@@ -58,7 +60,6 @@ class SessionScreen extends StatelessWidget {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
                 ),
-                margin: EdgeInsets.zero,
                 child: Container(
                   width: cardWidth,
                   padding: EdgeInsets.symmetric(
@@ -85,20 +86,7 @@ class SessionScreen extends StatelessWidget {
                         () => Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const AddPetScreen(),
-                          ),
-                        ),
-                        buttonWidth,
-                        fontSizeButton,
-                      ),
-                      SizedBox(height: verticalPadding),
-                      _responsiveButton(
-                        context,
-                        "Configurar alimentación",
-                        () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const ScheduleScreen(),
+                            builder: (_) => const AddPetScreen(),
                           ),
                         ),
                         buttonWidth,
@@ -108,9 +96,12 @@ class SessionScreen extends StatelessWidget {
                       _responsiveButton(
                         context,
                         "Historial de Mascotas",
-                        () {
-                          // Acción para historial
-                        },
+                        () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const HistoryPetsScreen(),
+                          ),
+                        ),
                         buttonWidth,
                         fontSizeButton,
                       ),
@@ -121,7 +112,7 @@ class SessionScreen extends StatelessWidget {
               SizedBox(height: verticalPadding * 2),
               GestureDetector(
                 onTap: () {
-                  Navigator.pushNamed(context, '/');
+                  _confirmLogout(context);
                 },
                 child: Container(
                   padding: EdgeInsets.symmetric(
@@ -177,6 +168,37 @@ class SessionScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  void _confirmLogout(BuildContext context) async {
+    final navigator = Navigator.of(context);
+    final confirmed = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder:
+          (ctx) => AlertDialog(
+            title: const Text('Confirmar cierre de sesión'),
+            content: const Text('¿Estás seguro que quieres cerrar sesión?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(false),
+                child: const Text('No'),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.of(ctx).pop(true),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.redAccent,
+                ),
+                child: const Text('Aceptar'),
+              ),
+            ],
+          ),
+    );
+
+    if (confirmed == true) {
+      await FirebaseAuth.instance.signOut();
+      navigator.pushNamedAndRemoveUntil('/login', (route) => false);
+    }
   }
 
   Widget _responsiveButton(

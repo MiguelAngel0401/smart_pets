@@ -50,8 +50,10 @@ class MyApp extends StatelessWidget {
         '/login': (context) => const LoginScreen(),
         '/register': (context) => const RegisterScreen(),
         '/add_pet': (context) => const AddPetScreen(),
-        '/session': (context) => const SessionScreen(),
-        '/schedule': (context) => const ScheduleScreen(),
+        '/session': (context) => const SessionScreen(nickname: ''),
+        '/schedule':
+            (context) =>
+                const ScheduleScreen(petName: '', petType: '', petId: ''),
         '/notification': (context) => const NotificationScreen(),
       },
     );

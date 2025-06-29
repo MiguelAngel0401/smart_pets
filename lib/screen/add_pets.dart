@@ -1,7 +1,68 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-class AddPetScreen extends StatelessWidget {
+class AddPetScreen extends StatefulWidget {
   const AddPetScreen({super.key});
+
+  @override
+  State<AddPetScreen> createState() => _AddPetScreenState();
+}
+
+class _AddPetScreenState extends State<AddPetScreen> {
+  final _formKey = GlobalKey<FormState>();
+
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _ageController = TextEditingController();
+  String? _selectedType;
+
+  bool _isSaving = false;
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _ageController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _savePet() async {
+    if (!_formKey.currentState!.validate() || _selectedType == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Por favor, completa todos los campos')),
+      );
+      return;
+    }
+
+    setState(() {
+      _isSaving = true;
+    });
+
+    try {
+      await FirebaseFirestore.instance.collection('pets').add({
+        'name': _nameController.text.trim(),
+        'age': int.parse(_ageController.text.trim()),
+        'type': _selectedType,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Mascota guardada con éxito')),
+      );
+
+      _nameController.clear();
+      _ageController.clear();
+      setState(() {
+        _selectedType = null;
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error al guardar: $e')));
+    } finally {
+      setState(() {
+        _isSaving = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,99 +104,143 @@ class AddPetScreen extends StatelessWidget {
                 boxShadow: [
                   BoxShadow(
                     color: Colors.orangeAccent.withAlpha(77),
-
                     blurRadius: 30,
                     offset: const Offset(0, 10),
                   ),
                 ],
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text(
-                    'Agrega aquí tu mascota',
-                    style: TextStyle(
-                      fontSize: isSmallDevice ? 22 : 26,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.deepOrange.shade700,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 30),
-
-                  _buildInputField(
-                    label: 'Nombre de la mascota',
-                    icon: Icons.pets,
-                    isSmall: isSmallDevice,
-                  ),
-                  const SizedBox(height: 20),
-                  _buildInputField(
-                    label: 'Edad',
-                    icon: Icons.cake,
-                    keyboardType: TextInputType.number,
-                    isSmall: isSmallDevice,
-                  ),
-                  const SizedBox(height: 20),
-                  DropdownButtonFormField<String>(
-                    decoration: InputDecoration(
-                      labelText: 'Tipo de mascota',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      prefixIcon: const Icon(Icons.category),
-                      filled: true,
-                      fillColor: Colors.orangeAccent.withAlpha(26),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(
-                          color: Colors.orangeAccent,
-                          width: 2,
-                        ),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    items:
-                        ['Gato', 'Perro', 'Otro']
-                            .map(
-                              (tipo) => DropdownMenuItem(
-                                value: tipo,
-                                child: Text(tipo),
-                              ),
-                            )
-                            .toList(),
-                    onChanged: (value) {},
-                  ),
-                  const SizedBox(height: 30),
-
-                  ElevatedButton(
-                    onPressed: () {},
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.orangeAccent,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(25),
-                      ),
-                    ),
-                    child: Text(
-                      'Guardar Mascota',
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text(
+                      'Agrega aquí tu mascota',
                       style: TextStyle(
-                        fontSize: isSmallDevice ? 14 : 18,
+                        fontSize: isSmallDevice ? 22 : 26,
                         fontWeight: FontWeight.bold,
+                        color: Colors.deepOrange.shade700,
                       ),
+                      textAlign: TextAlign.center,
                     ),
-                  ),
+                    const SizedBox(height: 30),
 
-                  const SizedBox(height: 40),
-
-                  Text(
-                    'Smart Pets ❤️ Cuidando a quienes más amas',
-                    style: TextStyle(
-                      fontSize: isSmallDevice ? 14 : 16,
-                      fontStyle: FontStyle.italic,
-                      color: Colors.black54,
+                    _buildInputField(
+                      controller: _nameController,
+                      label: 'Nombre de la mascota',
+                      icon: Icons.pets,
+                      isSmall: isSmallDevice,
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Por favor ingresa un nombre';
+                        }
+                        return null;
+                      },
                     ),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
+                    const SizedBox(height: 20),
+                    _buildInputField(
+                      controller: _ageController,
+                      label: 'Edad',
+                      icon: Icons.cake,
+                      keyboardType: TextInputType.number,
+                      isSmall: isSmallDevice,
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Por favor ingresa la edad';
+                        }
+                        final age = int.tryParse(value);
+                        if (age == null || age < 0) {
+                          return 'Ingresa una edad válida';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 20),
+                    DropdownButtonFormField<String>(
+                      decoration: InputDecoration(
+                        labelText: 'Tipo de mascota',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        prefixIcon: const Icon(Icons.category),
+                        filled: true,
+                        fillColor: Colors.orangeAccent.withAlpha(26),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: const BorderSide(
+                            color: Colors.orangeAccent,
+                            width: 2,
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      items:
+                          ['Gato', 'Perro', 'Otro']
+                              .map(
+                                (tipo) => DropdownMenuItem(
+                                  value: tipo,
+                                  child: Text(tipo),
+                                ),
+                              )
+                              .toList(),
+                      value: _selectedType,
+                      onChanged: (value) {
+                        setState(() {
+                          _selectedType = value;
+                        });
+                      },
+                      validator: (value) {
+                        if (value == null) {
+                          return 'Por favor selecciona un tipo';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 30),
+
+                    ElevatedButton(
+                      onPressed: _isSaving ? null : _savePet,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor:
+                            _isSaving
+                                ? Colors.orangeAccent.withAlpha(120)
+                                : Colors.orangeAccent,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(25),
+                        ),
+                      ),
+                      child:
+                          _isSaving
+                              ? const SizedBox(
+                                height: 24,
+                                width: 24,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 3,
+                                ),
+                              )
+                              : Text(
+                                'Guardar Mascota',
+                                style: TextStyle(
+                                  fontSize: isSmallDevice ? 14 : 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                    ),
+
+                    const SizedBox(height: 40),
+
+                    Text(
+                      'Smart Pets ❤️ Cuidando a quienes más amas',
+                      style: TextStyle(
+                        fontSize: isSmallDevice ? 14 : 16,
+                        fontStyle: FontStyle.italic,
+                        color: Colors.black54,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -145,12 +250,15 @@ class AddPetScreen extends StatelessWidget {
   }
 
   Widget _buildInputField({
+    required TextEditingController controller,
     required String label,
     IconData? icon,
     TextInputType keyboardType = TextInputType.text,
     bool isSmall = false,
+    String? Function(String?)? validator,
   }) {
-    return TextField(
+    return TextFormField(
+      controller: controller,
       keyboardType: keyboardType,
       style: TextStyle(fontSize: isSmall ? 14 : 16),
       decoration: InputDecoration(
@@ -165,12 +273,7 @@ class AddPetScreen extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
         ),
       ),
+      validator: validator,
     );
   }
-}
-
-void main() {
-  runApp(
-    const MaterialApp(debugShowCheckedModeBanner: false, home: AddPetScreen()),
-  );
 }
