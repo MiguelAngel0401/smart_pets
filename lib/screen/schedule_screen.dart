@@ -1,5 +1,10 @@
+import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:timezone/data/latest_all.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
+import 'package:permission_handler/permission_handler.dart';
 
 class ScheduleScreen extends StatefulWidget {
   final String petId;
@@ -22,12 +27,93 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
   DateTime? _selectedDate;
   bool _isSaving = false;
 
-  Future<void> _selectTime() async {
-    final picked = await showTimePicker(
-      context: context,
-      initialTime: _selectedTime ?? TimeOfDay.now(),
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
+
+  @override
+  void initState() {
+    super.initState();
+    tz.initializeTimeZones();
+    tz.setLocalLocation(tz.getLocation('America/Mexico_City'));
+
+    const androidInitSettings = AndroidInitializationSettings(
+      '@mipmap/ic_launcher',
     );
-    if (picked != null) setState(() => _selectedTime = picked);
+    final initSettings = InitializationSettings(android: androidInitSettings);
+    flutterLocalNotificationsPlugin.initialize(initSettings);
+
+    _createNotificationChannel();
+    _requestNotificationPermission();
+  }
+
+  Future<void> _createNotificationChannel() async {
+    const channel = AndroidNotificationChannel(
+      'smart_pets_channel',
+      'Smart Pets Notifications',
+      description: 'Canal para notificaciones de alimentación',
+      importance: Importance.high,
+    );
+
+    final androidPlugin =
+        flutterLocalNotificationsPlugin
+            .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin
+            >();
+    await androidPlugin?.createNotificationChannel(channel);
+  }
+
+  Future<void> _requestNotificationPermission() async {
+    if (Platform.isAndroid) {
+      final status = await Permission.notification.status;
+      if (!status.isGranted) {
+        final result = await Permission.notification.request();
+        if (!result.isGranted && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Permiso para notificaciones no concedido'),
+            ),
+          );
+        }
+      }
+    }
+  }
+
+  Future<void> _scheduleNotification(DateTime scheduledDate) async {
+    if (Platform.isAndroid) {
+      final status = await Permission.notification.status;
+      if (!status.isGranted) return;
+    }
+
+    final tzScheduled = tz.TZDateTime.from(scheduledDate, tz.local);
+    final id = scheduledDate.hashCode & 0x7FFFFFFF;
+
+    const androidDetails = AndroidNotificationDetails(
+      'smart_pets_channel',
+      'Smart Pets Notifications',
+      channelDescription: 'Canal para notificaciones de alimentación',
+      importance: Importance.high,
+      priority: Priority.high,
+      playSound: true,
+      enableVibration: true,
+      ticker: 'ticker',
+    );
+
+    const notificationDetails = NotificationDetails(android: androidDetails);
+
+    await flutterLocalNotificationsPlugin.zonedSchedule(
+      id,
+      'Hora de alimentar a ${widget.petName}',
+      'No olvides darle de comer a tu mascota.',
+      tzScheduled,
+      notificationDetails,
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
+      androidAllowWhileIdle: false,
+      matchDateTimeComponents: null,
+      androidScheduleMode:
+          AndroidScheduleMode
+              .inexactAllowWhileIdle, // 👈 Esto lo hace compatible
+    );
   }
 
   Future<void> _selectDate() async {
@@ -41,6 +127,14 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     if (picked != null) setState(() => _selectedDate = picked);
   }
 
+  Future<void> _selectTime() async {
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: _selectedTime ?? TimeOfDay.now(),
+    );
+    if (picked != null) setState(() => _selectedTime = picked);
+  }
+
   Future<void> _saveSchedule() async {
     final messenger = ScaffoldMessenger.of(context);
 
@@ -52,6 +146,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     }
 
     setState(() => _isSaving = true);
+
     final scheduledAt = DateTime(
       _selectedDate!.year,
       _selectedDate!.month,
@@ -59,6 +154,14 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
       _selectedTime!.hour,
       _selectedTime!.minute,
     );
+
+    if (scheduledAt.isBefore(DateTime.now())) {
+      messenger.showSnackBar(
+        const SnackBar(content: Text('La fecha y hora deben ser futuras')),
+      );
+      setState(() => _isSaving = false);
+      return;
+    }
 
     try {
       await FirebaseFirestore.instance
@@ -70,10 +173,16 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
             'createdAt': FieldValue.serverTimestamp(),
           });
 
+      await _scheduleNotification(scheduledAt);
+
       if (!mounted) return;
 
       messenger.showSnackBar(
-        const SnackBar(content: Text('Horario guardado con éxito')),
+        SnackBar(
+          content: Text(
+            'Horario guardado. Notificación programada para las ${_selectedTime!.format(context)}',
+          ),
+        ),
       );
 
       setState(() {
@@ -84,9 +193,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
       if (!mounted) return;
       messenger.showSnackBar(SnackBar(content: Text('Error al guardar: $e')));
     } finally {
-      if (mounted) {
-        setState(() => _isSaving = false);
-      }
+      if (mounted) setState(() => _isSaving = false);
     }
   }
 
@@ -100,7 +207,6 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     final valueStyle = TextStyle(
       fontSize: isSmall ? 18 : 20,
       fontWeight: FontWeight.w600,
-      color: Colors.black87,
     );
 
     return Scaffold(
@@ -164,9 +270,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
               child: Text(
                 _selectedDate == null
                     ? 'Seleccionar Fecha'
-                    : '${_selectedDate!.day.toString().padLeft(2, '0')}/'
-                        '${_selectedDate!.month.toString().padLeft(2, '0')}/'
-                        '${_selectedDate!.year}',
+                    : '${_selectedDate!.day.toString().padLeft(2, '0')}/${_selectedDate!.month.toString().padLeft(2, '0')}/${_selectedDate!.year}',
                 style: valueStyle,
               ),
             ),

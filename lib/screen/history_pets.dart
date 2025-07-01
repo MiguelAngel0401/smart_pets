@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 import 'schedule_screen.dart';
 
 class HistoryPetsScreen extends StatelessWidget {
@@ -7,6 +9,13 @@ class HistoryPetsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      return const Scaffold(
+        body: Center(child: Text('No hay usuario autenticado')),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Historial de Mis Mascotas'),
@@ -15,6 +24,8 @@ class HistoryPetsScreen extends StatelessWidget {
       body: StreamBuilder<QuerySnapshot>(
         stream:
             FirebaseFirestore.instance
+                .collection('users')
+                .doc(user.uid)
                 .collection('pets')
                 .orderBy('createdAt', descending: true)
                 .snapshots(),
@@ -35,7 +46,7 @@ class HistoryPetsScreen extends StatelessWidget {
             itemCount: pets.length,
             itemBuilder: (context, index) {
               final doc = pets[index];
-              final data = doc.data() as Map<String, dynamic>;
+              final data = doc.data()! as Map<String, dynamic>;
               final petId = doc.id;
               final petName = data['name'] as String? ?? 'Sin nombre';
               final petType = data['type'] as String? ?? 'Desconocido';
@@ -71,7 +82,7 @@ class HistoryPetsScreen extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.orangeAccent,
-        onPressed: () => Navigator.pushNamed(context, '/addPet'),
+        onPressed: () => Navigator.pushNamed(context, '/add_pet'),
         child: const Icon(Icons.add),
         tooltip: 'Agregar nueva mascota',
       ),
