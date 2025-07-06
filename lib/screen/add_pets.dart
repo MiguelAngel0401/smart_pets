@@ -14,14 +14,34 @@ class _AddPetScreenState extends State<AddPetScreen> {
 
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _ageController = TextEditingController();
+  final TextEditingController _customTypeController = TextEditingController();
   String? _selectedType;
+  bool _showCustomType = false;
 
   bool _isSaving = false;
+
+  // Lista ampliada de tipos de mascotas
+  final List<String> _petTypes = [
+    'Perro',
+    'Gato',
+    'Pájaro',
+    'Pez',
+    'Conejo',
+    'Hámster',
+    'Tortuga',
+    'Iguana',
+    'Serpiente',
+    'Chinchilla',
+    'Cobaya',
+    'Hurón',
+    'Otro',
+  ];
 
   @override
   void dispose() {
     _nameController.dispose();
     _ageController.dispose();
+    _customTypeController.dispose();
     super.dispose();
   }
 
@@ -29,6 +49,16 @@ class _AddPetScreenState extends State<AddPetScreen> {
     if (!_formKey.currentState!.validate() || _selectedType == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Por favor, completa todos los campos')),
+      );
+      return;
+    }
+
+    // Validar si seleccionó "Otro" pero no escribió el tipo personalizado
+    if (_selectedType == 'Otro' && _customTypeController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Por favor, especifica el tipo de mascota'),
+        ),
       );
       return;
     }
@@ -46,6 +76,12 @@ class _AddPetScreenState extends State<AddPetScreen> {
     });
 
     try {
+      // Determinar el tipo final a guardar
+      String finalType =
+          _selectedType == 'Otro'
+              ? _customTypeController.text.trim()
+              : _selectedType!;
+
       await FirebaseFirestore.instance
           .collection('users')
           .doc(user.uid)
@@ -53,7 +89,7 @@ class _AddPetScreenState extends State<AddPetScreen> {
           .add({
             'name': _nameController.text.trim(),
             'age': int.parse(_ageController.text.trim()),
-            'type': _selectedType,
+            'type': finalType,
             'createdAt': FieldValue.serverTimestamp(),
           });
 
@@ -63,8 +99,10 @@ class _AddPetScreenState extends State<AddPetScreen> {
 
       _nameController.clear();
       _ageController.clear();
+      _customTypeController.clear();
       setState(() {
         _selectedType = null;
+        _showCustomType = false;
       });
     } catch (e) {
       ScaffoldMessenger.of(
@@ -187,7 +225,7 @@ class _AddPetScreenState extends State<AddPetScreen> {
                         ),
                       ),
                       items:
-                          ['Gato', 'Perro', 'Otro']
+                          _petTypes
                               .map(
                                 (tipo) => DropdownMenuItem(
                                   value: tipo,
@@ -199,6 +237,10 @@ class _AddPetScreenState extends State<AddPetScreen> {
                       onChanged: (value) {
                         setState(() {
                           _selectedType = value;
+                          _showCustomType = value == 'Otro';
+                          if (value != 'Otro') {
+                            _customTypeController.clear();
+                          }
                         });
                       },
                       validator: (value) {
@@ -208,6 +250,25 @@ class _AddPetScreenState extends State<AddPetScreen> {
                         return null;
                       },
                     ),
+
+                    // Campo de texto personalizado que aparece cuando se selecciona "Otro"
+                    if (_showCustomType) ...[
+                      const SizedBox(height: 20),
+                      _buildInputField(
+                        controller: _customTypeController,
+                        label: 'Especifica el tipo de mascota',
+                        icon: Icons.edit,
+                        isSmall: isSmallDevice,
+                        validator: (value) {
+                          if (_selectedType == 'Otro' &&
+                              (value == null || value.trim().isEmpty)) {
+                            return 'Por favor especifica el tipo de mascota';
+                          }
+                          return null;
+                        },
+                      ),
+                    ],
+
                     const SizedBox(height: 30),
 
                     ElevatedButton(

@@ -15,6 +15,9 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
+  // Variable para controlar la visibilidad de la contraseña
+  bool _isPasswordVisible = false;
+
   Future<void> _login() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -139,7 +142,7 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 20),
               TextFormField(
                 controller: _passwordController,
-                obscureText: true,
+                obscureText: !_isPasswordVisible, // Usa la variable de estado
                 validator:
                     (value) =>
                         value == null || value.isEmpty
@@ -148,6 +151,20 @@ class _LoginScreenState extends State<LoginScreen> {
                 decoration: InputDecoration(
                   labelText: 'Contraseña',
                   prefixIcon: const Icon(Icons.lock_outline),
+                  // Agregar el suffixIcon para el toggle de visibilidad
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _isPasswordVisible
+                          ? Icons.visibility_off
+                          : Icons.visibility,
+                      color: Colors.grey,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _isPasswordVisible = !_isPasswordVisible;
+                      });
+                    },
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),

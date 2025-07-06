@@ -17,6 +17,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   final _formKey = GlobalKey<FormState>();
 
+  // Variable para controlar la visibilidad de la contraseña
+  bool _isPasswordVisible = false;
+
   @override
   void dispose() {
     _nombreController.dispose();
@@ -98,16 +101,33 @@ class _RegisterScreenState extends State<RegisterScreen> {
     required String label,
     bool obscure = false,
     String? Function(String?)? validator,
+    bool isPasswordField = false,
   }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: TextFormField(
         controller: controller,
-        obscureText: obscure,
+        obscureText: isPasswordField ? !_isPasswordVisible : obscure,
         validator: validator,
         decoration: InputDecoration(
           labelText: label,
           prefixIcon: _getIconForLabel(label),
+          suffixIcon:
+              isPasswordField
+                  ? IconButton(
+                    icon: Icon(
+                      _isPasswordVisible
+                          ? Icons.visibility_off
+                          : Icons.visibility,
+                      color: Colors.grey,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _isPasswordVisible = !_isPasswordVisible;
+                      });
+                    },
+                  )
+                  : null,
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           filled: true,
           fillColor: Colors.white,
@@ -219,6 +239,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     controller: _passwordController,
                     label: 'Contraseña',
                     obscure: true,
+                    isPasswordField:
+                        true, // Nuevo parámetro para identificar el campo de contraseña
                     validator: (v) {
                       if (v == null || v.trim().isEmpty) {
                         return 'La contraseña es obligatoria';

@@ -28,150 +28,167 @@ class SessionScreen extends StatelessWidget {
     final double logoutHorizontalPadding = clamp(screenWidth * 0.08, 20, 40);
     final double logoutVerticalPadding = clamp(screenHeight * 0.015, 8, 15);
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFFFE0B2),
-      appBar: AppBar(
-        centerTitle: true,
-        title: Text(
-          'Bienvenido, $nickname',
-          style: const TextStyle(
-            color: Colors.black87,
-            fontWeight: FontWeight.bold,
-            fontSize: 22,
+    return WillPopScope(
+      onWillPop: () async {
+        // Intercepta el botón "atrás" del teléfono
+        return await _confirmLogout(context);
+      },
+      child: Scaffold(
+        backgroundColor: const Color(0xFFFFE0B2),
+        appBar: AppBar(
+          centerTitle: true,
+          title: Text(
+            'Bienvenido, $nickname',
+            style: const TextStyle(
+              color: Colors.black87,
+              fontWeight: FontWeight.bold,
+              fontSize: 22,
+            ),
           ),
+          backgroundColor: Colors.orangeAccent.withAlpha(217),
+          elevation: 4,
+          shadowColor: Colors.orange.shade200.withAlpha(102),
+          iconTheme: const IconThemeData(color: Colors.black87),
+          // Removemos el botón de atrás automático del AppBar
+          automaticallyImplyLeading: false,
         ),
-        backgroundColor: Colors.orangeAccent.withAlpha(217),
-        elevation: 4,
-        shadowColor: Colors.orange.shade200.withAlpha(102),
-        iconTheme: const IconThemeData(color: Colors.black87),
-      ),
-      body: Center(
-        child: Padding(
-          padding: EdgeInsets.symmetric(
-            vertical: verticalPadding,
-            horizontal: 16,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Card(
-                elevation: 6,
-                shadowColor: Colors.deepOrange.withAlpha(38),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Container(
-                  width: cardWidth,
-                  padding: EdgeInsets.symmetric(
-                    vertical: verticalPadding * 1.5,
-                    horizontal: cardWidth * 0.08,
+        body: Center(
+          child: Padding(
+            padding: EdgeInsets.symmetric(
+              vertical: verticalPadding,
+              horizontal: 16,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Card(
+                  elevation: 6,
+                  shadowColor: Colors.deepOrange.withAlpha(38),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
                   ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        '¡Hora de alimentar a tus mascotas!',
-                        style: TextStyle(
-                          fontSize: fontSizeTitle,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.deepOrange.shade400.withAlpha(204),
-                          fontFamily: 'Georgia',
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      SizedBox(height: verticalPadding * 1.8),
-                      _responsiveButton(
-                        context,
-                        "Agregar Mascota",
-                        () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const AddPetScreen(),
+                  child: Container(
+                    width: cardWidth,
+                    padding: EdgeInsets.symmetric(
+                      vertical: verticalPadding * 1.5,
+                      horizontal: cardWidth * 0.08,
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          '¡Hora de alimentar a tus mascotas!',
+                          style: TextStyle(
+                            fontSize: fontSizeTitle,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.deepOrange.shade400.withAlpha(204),
+                            fontFamily: 'Georgia',
                           ),
+                          textAlign: TextAlign.center,
                         ),
-                        buttonWidth,
-                        fontSizeButton,
-                      ),
-                      SizedBox(height: verticalPadding),
-                      _responsiveButton(
-                        context,
-                        "Historial de Mascotas",
-                        () => Navigator.push(
+                        SizedBox(height: verticalPadding * 1.8),
+                        _responsiveButton(
                           context,
-                          MaterialPageRoute(
-                            builder: (_) => const HistoryPetsScreen(),
+                          "Agregar Mascota",
+                          () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const AddPetScreen(),
+                            ),
                           ),
+                          buttonWidth,
+                          fontSizeButton,
                         ),
-                        buttonWidth,
-                        fontSizeButton,
-                      ),
-                    ],
+                        SizedBox(height: verticalPadding),
+                        _responsiveButton(
+                          context,
+                          "Historial de Mascotas",
+                          () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const HistoryPetsScreen(),
+                            ),
+                          ),
+                          buttonWidth,
+                          fontSizeButton,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              SizedBox(height: verticalPadding * 2),
-              GestureDetector(
-                onTap: () {
-                  _confirmLogout(context);
-                },
-                child: Container(
-                  padding: EdgeInsets.symmetric(
-                    vertical: logoutVerticalPadding,
-                    horizontal: logoutHorizontalPadding,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.red.withAlpha(38),
-                    borderRadius: BorderRadius.circular(25),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.red.withAlpha(26),
-                        spreadRadius: 2,
-                        blurRadius: 6,
-                        offset: const Offset(0, 3),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.logout,
-                        color: Colors.redAccent,
-                        size: logoutIconSize,
-                      ),
-                      SizedBox(width: logoutHorizontalPadding * 0.3),
-                      Text(
-                        'Cerrar sesión',
-                        style: TextStyle(
-                          fontSize: logoutFontSize,
-                          fontWeight: FontWeight.bold,
+                SizedBox(height: verticalPadding * 2),
+                GestureDetector(
+                  onTap: () {
+                    _showLogoutDialog(context);
+                  },
+                  child: Container(
+                    padding: EdgeInsets.symmetric(
+                      vertical: logoutVerticalPadding,
+                      horizontal: logoutHorizontalPadding,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.red.withAlpha(38),
+                      borderRadius: BorderRadius.circular(25),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.red.withAlpha(26),
+                          spreadRadius: 2,
+                          blurRadius: 6,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.logout,
                           color: Colors.redAccent,
+                          size: logoutIconSize,
                         ),
-                      ),
-                    ],
+                        SizedBox(width: logoutHorizontalPadding * 0.3),
+                        Text(
+                          'Cerrar sesión',
+                          style: TextStyle(
+                            fontSize: logoutFontSize,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.redAccent,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              SizedBox(height: verticalPadding * 3),
-              Center(
-                child: Text(
-                  'Smart Pets ❤️ Cuidando a quienes más amas',
-                  style: TextStyle(
-                    fontSize: clamp(screenWidth * 0.035, 12, 18),
-                    fontStyle: FontStyle.italic,
-                    color: Colors.black54,
+                SizedBox(height: verticalPadding * 3),
+                Center(
+                  child: Text(
+                    'Smart Pets ❤️ Cuidando a quienes más amas',
+                    style: TextStyle(
+                      fontSize: clamp(screenWidth * 0.035, 12, 18),
+                      fontStyle: FontStyle.italic,
+                      color: Colors.black54,
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  void _confirmLogout(BuildContext context) async {
-    final navigator = Navigator.of(context);
+  // Función para mostrar el diálogo de confirmación (para el botón manual)
+  void _showLogoutDialog(BuildContext context) async {
+    final confirmed = await _confirmLogout(context);
+    if (confirmed) {
+      await FirebaseAuth.instance.signOut();
+      Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+    }
+  }
+
+  // Función que maneja tanto el botón "atrás" del teléfono como el botón manual
+  Future<bool> _confirmLogout(BuildContext context) async {
     final confirmed = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
@@ -195,10 +212,7 @@ class SessionScreen extends StatelessWidget {
           ),
     );
 
-    if (confirmed == true) {
-      await FirebaseAuth.instance.signOut();
-      navigator.pushNamedAndRemoveUntil('/login', (route) => false);
-    }
+    return confirmed ?? false;
   }
 
   Widget _responsiveButton(

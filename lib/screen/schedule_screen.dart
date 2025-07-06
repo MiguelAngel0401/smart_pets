@@ -444,7 +444,7 @@ class _ScheduleScreenState extends State<ScheduleScreen>
 
             const SizedBox(height: 32),
 
-            // Selector de fecha
+            // Seleccionar la fecha
             _buildDateTimeCard(
               title: 'Fecha',
               icon: Icons.calendar_today_rounded,
@@ -458,7 +458,7 @@ class _ScheduleScreenState extends State<ScheduleScreen>
 
             const SizedBox(height: 20),
 
-            // Selector de hora
+            // Seleccionar la hora
             _buildDateTimeCard(
               title: 'Hora',
               icon: Icons.access_time_rounded,

@@ -34,7 +34,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeFirebase();
   await NotificationService()
-      .initialize(); // 🔔 Inicializa servicio de notificaciones
+      .initialize(); //Inicializa servicio de notificaciones
   runApp(const MyApp());
 }
 

@@ -20,7 +20,7 @@ class NotificationService {
 
     await _notificationsPlugin.initialize(initializationSettings);
 
-    // Configuración del canal de notificaciones (SIN configuración de LED)
+    // Configuración del canal de notificaciones
     const channel = AndroidNotificationChannel(
       'smart_pets_channel',
       'Smart Pets Notifications',
@@ -28,9 +28,6 @@ class NotificationService {
       importance: Importance.max,
       enableVibration: true,
       playSound: true,
-      // Removemos la configuración del LED que causaba el problema
-      // enableLights: true,
-      // ledColor: Color.fromARGB(255, 255, 165, 0),
     );
 
     final androidImpl =
@@ -72,9 +69,6 @@ class NotificationService {
       priority: Priority.high,
       enableVibration: true,
       playSound: true,
-      // Removemos la configuración del LED
-      // enableLights: true,
-      // ledColor: Color.fromARGB(255, 255, 165, 0),
     );
 
     const details = NotificationDetails(android: androidDetails);
@@ -115,9 +109,6 @@ class NotificationService {
             priority: Priority.high,
             playSound: true,
             enableVibration: true,
-            // Removemos todas las configuraciones del LED
-            // enableLights: true,
-            // ledColor: Color.fromARGB(255, 255, 165, 0),
             fullScreenIntent: true, // Mostrar en pantalla completa
             category: AndroidNotificationCategory.reminder,
             showWhen: true,

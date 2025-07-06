@@ -30,7 +30,3 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
-  
-  # Ya no necesitas los assets de audio
-  # assets:
-  #   - assets/audio/alarma.mp3
