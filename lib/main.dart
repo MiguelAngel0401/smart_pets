@@ -4,6 +4,7 @@ import 'package:firebase_core/firebase_core.dart';
 
 import 'firebase_options.dart';
 
+// Pantallas
 import 'screen/splash_screen.dart';
 import 'screen/notification_screen.dart';
 import 'screen/login_screen.dart';
@@ -13,30 +14,10 @@ import 'screen/add_pets.dart';
 import 'screen/home_screen.dart';
 import 'screen/schedule_screen.dart';
 
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+// Servicio de notificaciones
+import 'services/notification_services.dart';
 
-// ✅ Controlador global para navegación desde notificaciones
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
-
-final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-    FlutterLocalNotificationsPlugin();
-
-Future<void> initializeNotifications() async {
-  const AndroidInitializationSettings initializationSettingsAndroid =
-      AndroidInitializationSettings('@mipmap/ic_launcher');
-
-  final InitializationSettings initializationSettings = InitializationSettings(
-    android: initializationSettingsAndroid,
-  );
-
-  // ✅ Manejador para cuando se toca la notificación
-  await flutterLocalNotificationsPlugin.initialize(
-    initializationSettings,
-    onDidReceiveNotificationResponse: (NotificationResponse response) {
-      navigatorKey.currentState?.pushNamed('/notification');
-    },
-  );
-}
 
 Future<void> initializeFirebase() async {
   try {
@@ -52,7 +33,8 @@ Future<void> initializeFirebase() async {
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeFirebase();
-  await initializeNotifications();
+  await NotificationService()
+      .initialize(); // 🔔 Inicializa servicio de notificaciones
   runApp(const MyApp());
 }
 
@@ -62,7 +44,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      navigatorKey: navigatorKey, // ✅ Conecta la navegación
+      navigatorKey: navigatorKey,
       debugShowCheckedModeBanner: false,
       title: 'Smart Pets',
       theme: ThemeData(

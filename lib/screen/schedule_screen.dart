@@ -1,10 +1,7 @@
-import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:timezone/data/latest_all.dart' as tz;
-import 'package:timezone/timezone.dart' as tz;
 import 'package:permission_handler/permission_handler.dart';
+import '../services/notification_services.dart';
 
 class ScheduleScreen extends StatefulWidget {
   final String petId;
@@ -22,130 +19,104 @@ class ScheduleScreen extends StatefulWidget {
   State<ScheduleScreen> createState() => _ScheduleScreenState();
 }
 
-class _ScheduleScreenState extends State<ScheduleScreen> {
+class _ScheduleScreenState extends State<ScheduleScreen>
+    with TickerProviderStateMixin {
   TimeOfDay? _selectedTime;
   DateTime? _selectedDate;
   bool _isSaving = false;
+  late AnimationController _animationController;
+  late Animation<double> _scaleAnimation;
 
-  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-      FlutterLocalNotificationsPlugin();
+  final NotificationService _notificationService = NotificationService();
 
   @override
   void initState() {
     super.initState();
-    tz.initializeTimeZones();
-    tz.setLocalLocation(tz.getLocation('America/Mexico_City'));
-
-    const androidInitSettings = AndroidInitializationSettings(
-      '@mipmap/ic_launcher',
+    _checkPermissions();
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 200),
+      vsync: this,
     );
-    final initSettings = InitializationSettings(android: androidInitSettings);
-    flutterLocalNotificationsPlugin.initialize(initSettings);
-
-    _createNotificationChannel();
-    _requestNotificationPermission();
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.95).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
   }
 
-  Future<void> _createNotificationChannel() async {
-    const channel = AndroidNotificationChannel(
-      'smart_pets_channel',
-      'Smart Pets Notifications',
-      description: 'Canal para notificaciones de alimentación',
-      importance: Importance.high,
-    );
-
-    final androidPlugin =
-        flutterLocalNotificationsPlugin
-            .resolvePlatformSpecificImplementation<
-              AndroidFlutterLocalNotificationsPlugin
-            >();
-    await androidPlugin?.createNotificationChannel(channel);
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
   }
 
-  Future<void> _requestNotificationPermission() async {
-    if (Platform.isAndroid) {
-      final status = await Permission.notification.status;
-      if (!status.isGranted) {
-        final result = await Permission.notification.request();
-        if (!result.isGranted && mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Permiso para notificaciones no concedido'),
-            ),
-          );
-        }
-      }
+  Future<void> _checkPermissions() async {
+    final status = await Permission.notification.status;
+    if (status.isDenied) {
+      await Permission.notification.request();
     }
-  }
-
-  Future<void> _scheduleNotification(DateTime scheduledDate) async {
-    if (Platform.isAndroid) {
-      final status = await Permission.notification.status;
-      if (!status.isGranted) return;
-    }
-
-    final tzScheduled = tz.TZDateTime.from(scheduledDate, tz.local);
-    final id = scheduledDate.hashCode & 0x7FFFFFFF;
-
-    const androidDetails = AndroidNotificationDetails(
-      'smart_pets_channel',
-      'Smart Pets Notifications',
-      channelDescription: 'Canal para notificaciones de alimentación',
-      importance: Importance.high,
-      priority: Priority.high,
-      playSound: true,
-      enableVibration: true,
-      ticker: 'ticker',
-    );
-
-    const notificationDetails = NotificationDetails(android: androidDetails);
-
-    await flutterLocalNotificationsPlugin.zonedSchedule(
-      id,
-      'Hora de alimentar a ${widget.petName}',
-      'No olvides darle de comer a tu mascota.',
-      tzScheduled,
-      notificationDetails,
-      uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
-      androidAllowWhileIdle: false,
-      matchDateTimeComponents: null,
-      androidScheduleMode:
-          AndroidScheduleMode
-              .inexactAllowWhileIdle, // 👈 Esto lo hace compatible
-    );
   }
 
   Future<void> _selectDate() async {
-    final today = DateTime.now();
-    final picked = await showDatePicker(
+    final pickedDate = await showDatePicker(
       context: context,
-      initialDate: _selectedDate ?? today,
-      firstDate: today,
-      lastDate: DateTime(today.year + 1),
+      initialDate: _selectedDate ?? DateTime.now(),
+      firstDate: DateTime.now(),
+      lastDate: DateTime(2100),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: Colors.deepOrange,
+              onPrimary: Colors.white,
+              surface: Color(0xFFFFE0B2),
+              onSurface: Colors.black87,
+            ),
+          ),
+          child: child!,
+        );
+      },
     );
-    if (picked != null) setState(() => _selectedDate = picked);
+
+    if (pickedDate != null) {
+      setState(() => _selectedDate = pickedDate);
+    }
   }
 
   Future<void> _selectTime() async {
-    final picked = await showTimePicker(
+    final pickedTime = await showTimePicker(
       context: context,
       initialTime: _selectedTime ?? TimeOfDay.now(),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: Colors.deepOrange,
+              onPrimary: Colors.white,
+              surface: Color(0xFFFFE0B2),
+              onSurface: Colors.black87,
+            ),
+          ),
+          child: child!,
+        );
+      },
     );
-    if (picked != null) setState(() => _selectedTime = picked);
+
+    if (pickedTime != null) {
+      setState(() => _selectedTime = pickedTime);
+    }
   }
 
   Future<void> _saveSchedule() async {
     final messenger = ScaffoldMessenger.of(context);
 
     if (_selectedDate == null || _selectedTime == null) {
-      messenger.showSnackBar(
-        const SnackBar(content: Text('Selecciona fecha y hora')),
+      _showCustomSnackBar(
+        messenger,
+        'Por favor selecciona fecha y hora',
+        Colors.orange,
+        Icons.warning_amber_rounded,
       );
       return;
     }
-
-    setState(() => _isSaving = true);
 
     final scheduledAt = DateTime(
       _selectedDate!.year,
@@ -156,12 +127,16 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     );
 
     if (scheduledAt.isBefore(DateTime.now())) {
-      messenger.showSnackBar(
-        const SnackBar(content: Text('La fecha y hora deben ser futuras')),
+      _showCustomSnackBar(
+        messenger,
+        'La fecha y hora deben ser futuras',
+        Colors.red,
+        Icons.error_outline_rounded,
       );
-      setState(() => _isSaving = false);
       return;
     }
+
+    setState(() => _isSaving = true);
 
     try {
       await FirebaseFirestore.instance
@@ -173,16 +148,23 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
             'createdAt': FieldValue.serverTimestamp(),
           });
 
-      await _scheduleNotification(scheduledAt);
+      final notificationId = DateTime.now().millisecondsSinceEpoch.remainder(
+        100000,
+      );
 
-      if (!mounted) return;
+      await _notificationService.scheduleNotification(
+        id: notificationId,
+        title: '🐾 ¡Hora de alimentar a ${widget.petName}!',
+        body:
+            'Es hora de darle de comer a tu ${widget.petType.toLowerCase()} 🍽️',
+        scheduledDate: scheduledAt,
+      );
 
-      messenger.showSnackBar(
-        SnackBar(
-          content: Text(
-            'Horario guardado. Notificación programada para las ${_selectedTime!.format(context)}',
-          ),
-        ),
+      _showCustomSnackBar(
+        messenger,
+        'Horario guardado exitosamente para las ${_selectedTime!.format(context)}',
+        Colors.green,
+        Icons.check_circle_outline_rounded,
       );
 
       setState(() {
@@ -190,135 +172,381 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
         _selectedTime = null;
       });
     } catch (e) {
-      if (!mounted) return;
-      messenger.showSnackBar(SnackBar(content: Text('Error al guardar: $e')));
+      _showCustomSnackBar(
+        messenger,
+        'Error al guardar el horario',
+        Colors.red,
+        Icons.error_outline_rounded,
+      );
     } finally {
-      if (mounted) setState(() => _isSaving = false);
+      setState(() => _isSaving = false);
     }
+  }
+
+  void _showCustomSnackBar(
+    ScaffoldMessengerState messenger,
+    String message,
+    Color color,
+    IconData icon,
+  ) {
+    messenger.showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Icon(icon, color: Colors.white),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                message,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: color,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        margin: const EdgeInsets.all(16),
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
+
+  String _formatDate(DateTime date) {
+    const months = [
+      'Enero',
+      'Febrero',
+      'Marzo',
+      'Abril',
+      'Mayo',
+      'Junio',
+      'Julio',
+      'Agosto',
+      'Septiembre',
+      'Octubre',
+      'Noviembre',
+      'Diciembre',
+    ];
+    const days = [
+      'Lunes',
+      'Martes',
+      'Miércoles',
+      'Jueves',
+      'Viernes',
+      'Sábado',
+      'Domingo',
+    ];
+
+    return '${days[date.weekday - 1]}, ${date.day} de ${months[date.month - 1]}';
+  }
+
+  Widget _buildDateTimeCard({
+    required String title,
+    required IconData icon,
+    required String value,
+    required VoidCallback onTap,
+    required bool isSelected,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      onTapDown: (_) => _animationController.forward(),
+      onTapUp: (_) => _animationController.reverse(),
+      onTapCancel: () => _animationController.reverse(),
+      child: AnimatedBuilder(
+        animation: _scaleAnimation,
+        builder: (context, child) {
+          return Transform.scale(
+            scale: _scaleAnimation.value,
+            child: Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors:
+                      isSelected
+                          ? [
+                            Colors.deepOrange.shade300,
+                            Colors.deepOrange.shade500,
+                          ]
+                          : [Colors.white, Colors.grey.shade50],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color:
+                        isSelected
+                            ? Colors.deepOrange.withOpacity(0.3)
+                            : Colors.grey.withOpacity(0.2),
+                    blurRadius: 12,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
+                border: Border.all(
+                  color:
+                      isSelected
+                          ? Colors.deepOrange.shade200
+                          : Colors.grey.shade200,
+                  width: 2,
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color:
+                              isSelected
+                                  ? Colors.white.withOpacity(0.2)
+                                  : Colors.deepOrange.shade50,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(
+                          icon,
+                          color: isSelected ? Colors.white : Colors.deepOrange,
+                          size: 24,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Text(
+                        title,
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color:
+                              isSelected ? Colors.white : Colors.grey.shade700,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    value,
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                      color: isSelected ? Colors.white : Colors.black87,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final isSmall = MediaQuery.of(context).size.width < 350;
-    final labelStyle = TextStyle(
-      fontSize: isSmall ? 16 : 18,
-      color: Colors.black54,
-    );
-    final valueStyle = TextStyle(
-      fontSize: isSmall ? 18 : 20,
-      fontWeight: FontWeight.w600,
-    );
-
     return Scaffold(
       backgroundColor: const Color(0xFFFFE0B2),
       appBar: AppBar(
-        backgroundColor: Colors.orangeAccent,
+        backgroundColor: Colors.deepOrange,
         elevation: 0,
         centerTitle: true,
-        title: Text(
-          widget.petName,
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_rounded, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Column(
+          children: [
+            Text(
+              widget.petName,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            Text(
+              'Programar Horario',
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.9),
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+        toolbarHeight: 80,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
         ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Card(
-              color: Colors.white,
-              elevation: 1,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+            // Header con icono de mascota
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.1),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  children: [
-                    const Icon(Icons.pets, size: 32, color: Colors.deepOrange),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(widget.petName, style: valueStyle),
-                          const SizedBox(height: 4),
-                          Text(widget.petType, style: labelStyle),
-                        ],
-                      ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.deepOrange.shade50,
+                      borderRadius: BorderRadius.circular(16),
                     ),
+                    child: Icon(
+                      widget.petType.toLowerCase() == 'perro'
+                          ? Icons.pets
+                          : Icons.favorite,
+                      color: Colors.deepOrange,
+                      size: 32,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Configura la alimentación',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.grey.shade800,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Selecciona cuándo quieres alimentar a ${widget.petName}',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 32),
+
+            // Selector de fecha
+            _buildDateTimeCard(
+              title: 'Fecha',
+              icon: Icons.calendar_today_rounded,
+              value:
+                  _selectedDate == null
+                      ? 'Seleccionar fecha'
+                      : _formatDate(_selectedDate!),
+              onTap: _selectDate,
+              isSelected: _selectedDate != null,
+            ),
+
+            const SizedBox(height: 20),
+
+            // Selector de hora
+            _buildDateTimeCard(
+              title: 'Hora',
+              icon: Icons.access_time_rounded,
+              value:
+                  _selectedTime == null
+                      ? 'Seleccionar hora'
+                      : _selectedTime!.format(context),
+              onTap: _selectTime,
+              isSelected: _selectedTime != null,
+            ),
+
+            const SizedBox(height: 40),
+
+            // Botón de guardar
+            Container(
+              width: double.infinity,
+              height: 60,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.deepOrange.shade400,
+                    Colors.deepOrange.shade600,
                   ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.deepOrange.withOpacity(0.4),
+                    blurRadius: 15,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
               ),
-            ),
-            const SizedBox(height: 24),
-            Text('Fecha', style: labelStyle),
-            const SizedBox(height: 8),
-            OutlinedButton(
-              onPressed: _selectDate,
-              style: OutlinedButton.styleFrom(
-                backgroundColor: Colors.white,
-                side: BorderSide(color: Colors.deepOrange.shade100),
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+              child: ElevatedButton(
+                onPressed: _isSaving ? null : _saveSchedule,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.transparent,
+                  shadowColor: Colors.transparent,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
                 ),
-              ),
-              child: Text(
-                _selectedDate == null
-                    ? 'Seleccionar Fecha'
-                    : '${_selectedDate!.day.toString().padLeft(2, '0')}/${_selectedDate!.month.toString().padLeft(2, '0')}/${_selectedDate!.year}',
-                style: valueStyle,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text('Hora', style: labelStyle),
-            const SizedBox(height: 8),
-            OutlinedButton(
-              onPressed: _selectTime,
-              style: OutlinedButton.styleFrom(
-                backgroundColor: Colors.white,
-                side: BorderSide(color: Colors.deepOrange.shade100),
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              child: Text(
-                _selectedTime?.format(context) ?? 'Seleccionar Hora',
-                style: valueStyle,
-              ),
-            ),
-            const Spacer(),
-            ElevatedButton(
-              onPressed: _isSaving ? null : _saveSchedule,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.deepOrange,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              child:
-                  _isSaving
-                      ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2,
+                child:
+                    _isSaving
+                        ? Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Text(
+                              'Guardando...',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white.withOpacity(0.8),
+                              ),
+                            ),
+                          ],
+                        )
+                        : Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(
+                              Icons.schedule_rounded,
+                              color: Colors.white,
+                              size: 24,
+                            ),
+                            const SizedBox(width: 12),
+                            const Text(
+                              'Programar Horario',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
                         ),
-                      )
-                      : const Text(
-                        'Guardar Horario',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+              ),
             ),
           ],
         ),

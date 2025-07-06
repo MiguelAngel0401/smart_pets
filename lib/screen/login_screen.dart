@@ -18,9 +18,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _login() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final messenger = ScaffoldMessenger.of(
-      context,
-    ); // ✅ Evita usar context tras await
+    final messenger = ScaffoldMessenger.of(context);
 
     try {
       final authResult = await FirebaseAuth.instance.signInWithEmailAndPassword(
@@ -74,17 +72,16 @@ class _LoginScreenState extends State<LoginScreen> {
         error = 'Correo inválido';
       }
 
-      messenger.showSnackBar(SnackBar(content: Text(error))); // ✅
+      messenger.showSnackBar(SnackBar(content: Text(error)));
     } catch (e) {
-      messenger.showSnackBar(
-        SnackBar(content: Text('Error: ${e.toString()}')),
-      ); // ✅
+      messenger.showSnackBar(SnackBar(content: Text('Error: ${e.toString()}')));
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       backgroundColor: const Color(0xFFFFE0B2),
       appBar: AppBar(
         backgroundColor: Colors.orangeAccent,
@@ -98,12 +95,11 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ),
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
         child: Form(
           key: _formKey,
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Icon(Icons.pets, size: 90, color: Colors.deepOrange),
               const SizedBox(height: 20),
@@ -201,16 +197,13 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
               ),
-              const Spacer(),
-              const Padding(
-                padding: EdgeInsets.only(bottom: 16.0),
-                child: Text(
-                  'Smart Pets ❤️ Cuidando a quienes más amas',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontStyle: FontStyle.italic,
-                    color: Colors.black54,
-                  ),
+              const SizedBox(height: 30),
+              const Text(
+                'Smart Pets ❤️ Cuidando a quienes más amas',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontStyle: FontStyle.italic,
+                  color: Colors.black54,
                 ),
               ),
             ],
